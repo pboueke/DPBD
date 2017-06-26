@@ -100,12 +100,43 @@ Agora, iremos rodar novamente as queries. Dessa vez, contudo, elas estarão simp
 * **Tempo real query 4: ** 0.0010s
 * **Tempo real query 7: ** 0.0015s
 
-Observamos, portanto, reduções consideráveis nos tempos de execução, especialmente para a query #7, que ficou mais que 10 vezes mais rápida!
+*(médias de 10 execuções)*
+
+Observamos, portanto, reduções consideráveis nos tempos de execução, especialmente para a query #7, que ficou mais que 10 vezes mais rápida.
 
 ### Fragmentação Vertical
 
 A fragmentação vertical nos proporcionará benefícios sempre que existirem tabelas consultadas das quais apenas uma pequena pate das colunas nos interessa.
 
-Para a query #1, por exemplo, podemos fragmentar a tabela em duas: uma com os campos "rid,taskid,ewkfid" e outra com os campos utilizados, "rid,visc,dens", dessa forma evitando que dados inúteis sejam carregados em memória.
+Para a query #1, por exemplo, podemos fragmentar a tabela dl_mat em duas: uma com os campos "rid,taskid,ewkfid" e outra com os campos utilizados, "rid,visc,dens", dessa forma evitando que dados inúteis sejam carregados em memória. Observamos que essa fragmentação também beneficiaria a query #7.
 
-Para a query #2,
+Para a query #4, uma proposta interessante é criar um fragmento de oedgecfdpre com os campos "key,dl_inid,nexttaskid,dl_matid,mesh" e outro com "key" e os demais. Observamos que essa fragmentação também resultaria em ganhos para as demais queries.
+
+Para a query #7, além dos benefícios obtidos pelas fragmentações anteriores, é possível nos beneficiarmos de uma fragmentação da tabela dl_solver em duas partes: uma com os campos "rid,velocity_0" e outra com "rid" e os demais.
+
+#### Criando fragmentos para a tabela dl_mat
+
+```SELECT rid,visc,dens INTO "scc2-edgecfd".dl_mat_sq1 FROM "scc2-edgecfd".dl_mat;
+SELECT rid,taskid,ewkfid INTO "scc2-edgecfd".dl_mat_cq1 FROM "scc2-edgecfd".dl_mat;```
+
+#### Criando fragmentos para a tabela oedgecfdpre
+
+```SELECT key,dl_inid,nexttaskid,dl_matid,mesh INTO "scc2-edgecfd".oedgecfdpre_sq4 FROM "scc2-edgecfd".oedgecfdpre;
+SELECT key,ewkfid,previoustaskid,nextactid,mid,processes,dl_preid INTO "scc2-edgecfd".oedgecfdpre_cq4 FROM "scc2-edgecfd".oedgecfdpre;```
+
+#### Criando fragmentos para a tabela dl_solver
+
+```SELECT rid,velocity_0 INTO "scc2-edgecfd".dl_solver_sq7 FROM "scc2-edgecfd".dl_solver;
+SELECT rid,velocity_1,velocity_2,points_0,points_1,points_2,linear_iters,avg_toler,r,rro,pressure,time,timestep,taskid,ewkfid INTO "scc2-edgecfd".dl_solver_cq7 FROM "scc2-edgecfd".dl_solver;```
+
+#### Resultados
+
+Agora, iremos rodar novamente as queries. Dessa vez, ao invés de consultarmos tabelas com todos os dados originais da tupla, estaremos consultando tabelas menos largas.
+
+* **Tempo real query 1: ** 0.0035s
+* **Tempo real query 4: ** 0.0015s
+* **Tempo real query 7: ** 0.1573s
+
+*(médias de 10 execuções)*
+
+Dessa vez observamos ganhos menos expressivos, especialmente para a query 4 e 7.
