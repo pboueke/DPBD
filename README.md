@@ -171,3 +171,7 @@ Por conta de dificuldades técnicas, não foi possível realizar a experimentaç
 Com relação à distribuição de tabelas e fragmentos pela rede, ela tende a ser bastante vantajosa a partir do ponto que nos permite e viabiliza o paralelismo intra-query. Se as tabelas e os fragmentos forem devidamente distribuídos em função das queries de maior importancia, é possível otimizar no que diz respeito ao tempo de execução. Essa abordagem, contudo, deve ser estudada com cuidado, pois um dos maiores custos associados à distribuicão é justamente o custo de comunicação.
 
 De forma similar, a distribuição em sítios também nos permite fazer uso do paralelismo inter-query, a partir do momneto em que diversas queries passam a ser respondidas por apenas parte dos nós do cluster de dados.
+
+### Conclusões
+
+Por meio de fragmentações verticais e, especialmente, horizontais, conseguimos obters excelentes melhorias de desempenho nas queries selecionadas. É de se esperar, portanto, que em situações reais, um estudo cauteloso do uso dos nossos serviços é capaz de nos proporcionar ganhos de desempenho que não devem ser desconsiderados no momento do cálculo de custos operacionais e de manutenção. De forma similar, deve-se esperar que esse mesmo estudo, aplicado à replicação de tabelas e distribuição de relacionamentos e fragmentos em uma rede também nos proporcionará ganhos que devem ser levados em consideração.
