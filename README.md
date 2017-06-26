@@ -1,6 +1,6 @@
 # PDBD
 
-## Creando banco a partir do backup:
+## Criando banco a partir do backup:
 
 ```pg_restore --create --exit-on-error --verbose "path\to\file.backup"```
 
@@ -46,4 +46,6 @@
 
 ![queries](img/schema.png)
 
-## P
+## Propostas de Fragmentação
+
+### Fragmentação Horizontal
