@@ -20,7 +20,7 @@
 ```mesh = 'cavp.4' AND```
 ```"oedgecfdpre"."dl_matid" = "dl_mat"."rid"```
 
-* **Tempo real: ** 0.0072s
+* Tempo real: 0.0072s
 
 *(média de 10 execuções)*
 
@@ -32,7 +32,7 @@
 ```AND dl_in.rid = oedgecfdpre.dl_inid ```
 ```AND dl_in.forcing in (-3, -4) ```
 
-* **Tempo real: ** 0.0024s
+* Tempo real: 0.0024s
 
 *(média de 10 execuções)*
 
@@ -47,7 +47,7 @@
 ```AND oedgecfdpre.dl_inid = dl_in.rid```
 ```AND dl_solver.velocity_0 > 0.21```
 
-* **Tempo real: ** 0.163s
+* Tempo real: 0.163s
 
 *(média de 10 execuções)*
 
@@ -72,38 +72,43 @@ Para esse estudo, realizaremos apenas fragmentações simples.
 
 #### Criando fragmentos em mesh na tabela oedgecfdpre
 
-``` CREATE TABLE "scc2-edgecfd".oedgecfdpre_234 (
-CHECK ( mesh = 'cavp.2' OR mesh = 'cavp.3' OR mesh = 'cavp.4' )
-)INHERITS ("scc2-edgecfd".oedgecfdpre);
-CREATE TABLE "scc2-edgecfd".oedgecfdpre_15 (
-CHECK ( mesh = 'cavp.1' OR mesh = 'cavp.5' )
-)INHERITS ("scc2-edgecfd".oedgecfdpre);```
+```CREATE TABLE "scc2-edgecfd".oedgecfdpre_234 (```
+```CHECK ( mesh = 'cavp.2' OR mesh = 'cavp.3' OR mesh = 'cavp.4' )```
+```)INHERITS ("scc2-edgecfd".oedgecfdpre);```
+
+```CREATE TABLE "scc2-edgecfd".oedgecfdpre_15 (```
+```CHECK ( mesh = 'cavp.1' OR mesh = 'cavp.5' )```
+```)INHERITS ("scc2-edgecfd".oedgecfdpre);```
+
 
 #### Criando fragmentos em forcing, na tabela dl_in
 
-``` CREATE TABLE "scc2-edgecfd".dl_in_n3n4 (
-CHECK ( forcing = -3 OR forcing = -4 )
-)INHERITS ("scc2-edgecfd".dl_in);
-CREATE TABLE "scc2-edgecfd".dl_in_rest (
-CHECK ( forcing != -3 AND forcing != -4 )
-)INHERITS ("scc2-edgecfd".dl_in);```
+``` CREATE TABLE "scc2-edgecfd".dl_in_n3n4 (```
+```CHECK ( forcing = -3 OR forcing = -4 )```
+```)INHERITS ("scc2-edgecfd".dl_in);```
+
+```CREATE TABLE "scc2-edgecfd".dl_in_rest (```
+```CHECK ( forcing != -3 AND forcing != -4 )```
+```)INHERITS ("scc2-edgecfd".dl_in);```
+
 
 #### Criando fragmentos em velocity_0, na tabela dl_solver
 
-``` CREATE TABLE "scc2-edgecfd".dl_solver_gt021 (
-CHECK ( velocity_0 > 0.21 )
-)INHERITS ("scc2-edgecfd".dl_solver);
-CREATE TABLE "scc2-edgecfd".dl_solver_le021 (
-CHECK ( velocity_0 <= 0.21 )
-)INHERITS ("scc2-edgecfd".dl_solver);```
+``` CREATE TABLE "scc2-edgecfd".dl_solver_gt021 (```
+```CHECK ( velocity_0 > 0.21 )```
+```)INHERITS ("scc2-edgecfd".dl_solver);```
+
+```CREATE TABLE "scc2-edgecfd".dl_solver_le021 (```
+```CHECK ( velocity_0 <= 0.21 )```
+```)INHERITS ("scc2-edgecfd".dl_solver);```
 
 #### Resultados
 
 Agora, iremos rodar novamente as queries. Dessa vez, contudo, elas estarão simplificadas, pois os campos de seleção  não serão mais necessários, visto que as queries serão redirecionadas para as tabelas que já passaram pela seleção.
 
-* **Tempo real query 1: ** 0.0015s
-* **Tempo real query 4: ** 0.0010s
-* **Tempo real query 7: ** 0.0015s
+* Tempo real query 1:  0.0015s
+* Tempo real query 4:  0.0010s
+* Tempo real query 7:  0.0015s
 
 *(médias de 10 execuções)*
 
@@ -121,26 +126,29 @@ Para a query #7, além dos benefícios obtidos pelas fragmentações anteriores,
 
 #### Criando fragmentos para a tabela dl_mat
 
-```SELECT rid,visc,dens INTO "scc2-edgecfd".dl_mat_sq1 FROM "scc2-edgecfd".dl_mat;
-SELECT rid,taskid,ewkfid INTO "scc2-edgecfd".dl_mat_cq1 FROM "scc2-edgecfd".dl_mat;```
+```SELECT rid,visc,dens INTO "scc2-edgecfd".dl_mat_sq1 FROM "scc2-edgecfd".dl_mat;```
+
+```SELECT rid,taskid,ewkfid INTO "scc2-edgecfd".dl_mat_cq1 FROM "scc2-edgecfd".dl_mat;```
 
 #### Criando fragmentos para a tabela oedgecfdpre
 
-```SELECT key,dl_inid,nexttaskid,dl_matid,mesh INTO "scc2-edgecfd".oedgecfdpre_sq4 FROM "scc2-edgecfd".oedgecfdpre;
-SELECT key,ewkfid,previoustaskid,nextactid,mid,processes,dl_preid INTO "scc2-edgecfd".oedgecfdpre_cq4 FROM "scc2-edgecfd".oedgecfdpre;```
+```SELECT key,dl_inid,nexttaskid,dl_matid,mesh INTO "scc2-edgecfd".oedgecfdpre_sq4 FROM "scc2-edgecfd".oedgecfdpre;```
+
+```SELECT key,ewkfid,previoustaskid,nextactid,mid,processes,dl_preid INTO "scc2-edgecfd".oedgecfdpre_cq4 FROM "scc2-edgecfd".oedgecfdpre;```
 
 #### Criando fragmentos para a tabela dl_solver
 
-```SELECT rid,velocity_0 INTO "scc2-edgecfd".dl_solver_sq7 FROM "scc2-edgecfd".dl_solver;
-SELECT rid,velocity_1,velocity_2,points_0,points_1,points_2,linear_iters,avg_toler,r,rro,pressure,time,timestep,taskid,ewkfid INTO "scc2-edgecfd".dl_solver_cq7 FROM "scc2-edgecfd".dl_solver;```
+```SELECT rid,velocity_0 INTO "scc2-edgecfd".dl_solver_sq7 FROM "scc2-edgecfd".dl_solver;```
+
+```SELECT rid,velocity_1,velocity_2,points_0,points_1,points_2,linear_iters,avg_toler,r,rro,pressure,time,timestep,taskid,ewkfid INTO "scc2-edgecfd".dl_solver_cq7 FROM "scc2-edgecfd".dl_solver;```
 
 #### Resultados
 
 Agora, iremos rodar novamente as queries. Dessa vez, ao invés de consultarmos tabelas com todos os dados originais da tupla, estaremos consultando tabelas menos largas.
 
-* **Tempo real query 1: ** 0.0035s
-* **Tempo real query 4: ** 0.0015s
-* **Tempo real query 7: ** 0.1573s
+* Tempo real query 1:  0.0035s
+* Tempo real query 4:  0.0015s
+* Tempo real query 7:  0.1573s
 
 *(médias de 10 execuções)*
 
