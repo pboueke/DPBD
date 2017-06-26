@@ -1,4 +1,5 @@
-# Paralelismo e Distribuiçáo de Banco de Dados - UFRJ 2017.1
+# Paralelismo e Distribuição de Banco de Dados
+## UFRJ 2017.1
 
 * Descrição: trabalho prático da graduação.
 * Aluno: Pedro H. Boueke
@@ -66,7 +67,7 @@ Para a query #4, poderíamos fragmentar a tabela dl_pre em duas: uma para valore
 
 Para a query #7, seria interessante separar a tabela dl_solver em duas: uma com registros com velocit_0 maior que 0.21 e outra para os demais.
 
-Obsaervamos que essas fragmentações poderiam, também, dar origem a fragmentações derivadas nas tabelas que possuem chaves oriundas das tabelas originalmente fragmentadas.
+Observamos que essas fragmentações poderiam, também, dar origem a fragmentações derivadas nas tabelas que possuem chaves oriundas das tabelas originalmente fragmentadas.
 
 Para esse estudo, realizaremos apenas fragmentações simples.
 
@@ -152,11 +153,11 @@ Agora, iremos rodar novamente as queries. Dessa vez, ao invés de consultarmos t
 
 *(médias de 10 execuções)*
 
-Dessa vez observamos ganhos menos expressivos, especialmente para a query 4 e 7.
+Dessa vez observamos ganhos menos expressivos, especialmente para a query 7, que se beneficiou muito pouco.
 
 ### Fragmentação Híbrida
 
-Observamos que tanto para o caso da fragmentação horizontal, quanto para o caso da fragmentação horizontal, o tempo de execução de todas as queries foi diminuído. Para um melhor aproveitamento desse fato, seria interessante buscarmos uma combinação de fragmentos que melhor otimize nosso tempo de consulta, o que significa misturar os dois tipos de fragmentação estudados.
+Observamos que tanto para o caso da fragmentação horizontal, quanto para o caso da fragmentação vertical, o tempo de execução de todas as queries foi diminuído. Para um melhor aproveitamento desse fato, seria interessante buscarmos uma combinação de fragmentos que melhor otimize nosso tempo de consulta, o que significa misturar os dois tipos de fragmentação estudados.
 
 Nesse trabalho, foram estudadas as fragmentações horizontais e verticais propostas acima de forma independente entre si. Como proposta, seria interessante considerar a fragmentação vertical de todos os fragmentos horizontais em fragmentos de tuplas truncadas verticalmente, como foi experimentado na seção de fragmentação vertical.
 
@@ -166,9 +167,9 @@ A fim de reduzir o número de fragmentos finais, poderia ser ainda mais interess
 
 Por conta de dificuldades técnicas, não foi possível realizar a experimentação do uso de tabelas replicadas e nem de fragmentos distribuídos em múltiplos sítios.
 
-É de se esperar, contudo, que a replicação de tabelas resulte em tempos de resposta menores, em especial caso de clientes espalhados por uma rede física na qual diversos sítios do serviço estejam bem distribuídos fisicamente para atender demnandas provenientes de pontos diversos da malha da rede. Do ponto de vista de um experimentador local, como é o caso, a replicação pode ser vantajosa no momento em que há muita demanda pelo serviço de dados , promovendo alta paralelização.
+É de se esperar, contudo, que a replicação de tabelas resulte em tempos de resposta menores, em especial caso de clientes espalhados por uma rede física na qual diversos sítios do serviço estejam bem distribuídos fisicamente para atender demnandas provenientes de pontos diversos da malha da rede. Do ponto de vista de um experimentador local, como é o caso, a replicação pode ser vantajosa no momento em que há muita demanda pelo serviço de dados, podendo promover alta paralelização.
 
-Com relação à distribuição de tabelas e fragmentos pela rede, ela tende a ser bastante vantajosa a partir do ponto que nos permite e viabiliza o paralelismo intra-query. Se as tabelas e os fragmentos forem devidamente distribuídos em função das queries de maior importancia, é possível otimizar no que diz respeito ao tempo de execução. Essa abordagem, contudo, deve ser estudada com cuidado, pois um dos maiores custos associados à distribuicão é justamente o custo de comunicação.
+Com relação à distribuição de tabelas e fragmentos pela rede, ela tende a ser bastante vantajosa a partir do ponto que nos permite e viabiliza o paralelismo intra-query. Se as tabelas e os fragmentos forem devidamente distribuídos em função das queries de maior importancia, são possíveis otimizações no que diz respeito ao tempo de execução. Essa abordagem, contudo, deve ser estudada com cuidado, pois um dos maiores custos associados à distribuicão é justamente o custo de comunicação.
 
 De forma similar, a distribuição em sítios também nos permite fazer uso do paralelismo inter-query, a partir do momneto em que diversas queries passam a ser respondidas por apenas parte dos nós do cluster de dados.
 
