@@ -69,25 +69,43 @@ Para esse estudo, realizaremos apenas fragmentações simples.
 
 ``` CREATE TABLE "scc2-edgecfd".oedgecfdpre_234 (
 CHECK ( mesh = 'cavp.2' OR mesh = 'cavp.3' OR mesh = 'cavp.4' )
-INHERITS ("scc2-edgecfd".oedgecfdpre);
+)INHERITS ("scc2-edgecfd".oedgecfdpre);
 CREATE TABLE "scc2-edgecfd".oedgecfdpre_15 (
 CHECK ( mesh = 'cavp.1' OR mesh = 'cavp.5' )
-INHERITS ("scc2-edgecfd".oedgecfdpre);```
+)INHERITS ("scc2-edgecfd".oedgecfdpre);```
 
 #### Criando fragmentos em forcing, na tabela dl_in
 
 ``` CREATE TABLE "scc2-edgecfd".dl_in_n3n4 (
 CHECK ( forcing = -3 OR forcing = -4 )
-INHERITS ("scc2-edgecfd".dl_in);
+)INHERITS ("scc2-edgecfd".dl_in);
 CREATE TABLE "scc2-edgecfd".dl_in_rest (
 CHECK ( forcing != -3 AND forcing != -4 )
-INHERITS ("scc2-edgecfd".dl_in);```
+)INHERITS ("scc2-edgecfd".dl_in);```
 
 #### Criando fragmentos em velocity_0, na tabela dl_solver
 
 ``` CREATE TABLE "scc2-edgecfd".dl_solver_gt021 (
-CHECK ( velocity > 0.21 )
-INHERITS ("scc2-edgecfd".dl_solver);
+CHECK ( velocity_0 > 0.21 )
+)INHERITS ("scc2-edgecfd".dl_solver);
 CREATE TABLE "scc2-edgecfd".dl_solver_le021 (
-CHECK ( velocity <= 0.21 )
-INHERITS ("scc2-edgecfd".dl_solver);```
+CHECK ( velocity_0 <= 0.21 )
+)INHERITS ("scc2-edgecfd".dl_solver);```
+
+#### Resultados
+
+Agora, iremos rodar novamente as queries. Dessa vez, contudo, elas estarão simplificadas, pois os campos de seleção  não serão mais necessários, visto que as queries serão redirecionadas para as tabelas que já passaram pela seleção.
+
+* **Tempo real query 1: ** 0.0015s
+* **Tempo real query 4: ** 0.0010s
+* **Tempo real query 7: ** 0.0015s
+
+Observamos, portanto, reduções consideráveis nos tempos de execução, especialmente para a query #7, que ficou mais que 10 vezes mais rápida!
+
+### Fragmentação Vertical
+
+A fragmentação vertical nos proporcionará benefícios sempre que existirem tabelas consultadas das quais apenas uma pequena pate das colunas nos interessa.
+
+Para a query #1, por exemplo, podemos fragmentar a tabela em duas: uma com os campos "rid,taskid,ewkfid" e outra com os campos utilizados, "rid,visc,dens", dessa forma evitando que dados inúteis sejam carregados em memória.
+
+Para a query #2,
