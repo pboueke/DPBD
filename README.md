@@ -52,3 +52,42 @@ FROM "scc2-edgecfd".osetsolverconfig, "scc2-edgecfd".dl_in, "scc2-edgecfd".oedge
 ## Propostas de Fragmentação
 
 ### Fragmentação Horizontal
+
+A fragmentação horizontal pode ser empregada, para o benefício das queries principais, nas tabelas onde valores são utilizados para seleção de registros.
+
+Para a query #1, pode ser interessante dividir a tabela oedgecfdpre em duas: uma para registros com valores de mesh iguais a "cavp.2" ou "cavp.3" ou "cavp.4" e outra para os demais.
+
+Para a query #4, poderíamos fragmentar a tabela dl_pre em duas: uma para valores de forcing iguais a -3 e -4 e outra para os demais valores.
+
+Para a query #7, seria interessante separar a tabela dl_solver em duas: uma com registros com velocit_0 maior que 0.21 e outra para os demais.
+
+Obsaervamos que essas fragmentações poderiam, também, dar origem a fragmentações derivadas nas tabelas que possuem chaves oriundas das tabelas originalmente fragmentadas.
+
+Para esse estudo, realizaremos apenas fragmentações simples.
+
+#### Criando fragmentos em mesh na tabela oedgecfdpre
+
+``` CREATE TABLE "scc2-edgecfd".oedgecfdpre_234 (
+CHECK ( mesh = 'cavp.2' OR mesh = 'cavp.3' OR mesh = 'cavp.4' )
+INHERITS ("scc2-edgecfd".oedgecfdpre);
+CREATE TABLE "scc2-edgecfd".oedgecfdpre_15 (
+CHECK ( mesh = 'cavp.1' OR mesh = 'cavp.5' )
+INHERITS ("scc2-edgecfd".oedgecfdpre);```
+
+#### Criando fragmentos em forcing, na tabela dl_in
+
+``` CREATE TABLE "scc2-edgecfd".dl_in_n3n4 (
+CHECK ( forcing = -3 OR forcing = -4 )
+INHERITS ("scc2-edgecfd".dl_in);
+CREATE TABLE "scc2-edgecfd".dl_in_rest (
+CHECK ( forcing != -3 AND forcing != -4 )
+INHERITS ("scc2-edgecfd".dl_in);```
+
+#### Criando fragmentos em velocity_0, na tabela dl_solver
+
+``` CREATE TABLE "scc2-edgecfd".dl_solver_gt021 (
+CHECK ( velocity > 0.21 )
+INHERITS ("scc2-edgecfd".dl_solver);
+CREATE TABLE "scc2-edgecfd".dl_solver_le021 (
+CHECK ( velocity <= 0.21 )
+INHERITS ("scc2-edgecfd".dl_solver);```
