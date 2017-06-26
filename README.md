@@ -1,12 +1,17 @@
-# PDBD
+# Paralelismo e Distribuiçáo de Banco de Dados - UFRJ 2017.1
+
+* Descrição: trabalho prático da graduação.
+* Aluno: Pedro H. Boueke
+* Grupo #1, consultas #1, #4, #7
+* Desenvolvimento (programas em python): https://github.com/pboueke/PDBD
 
 ## Criando banco a partir do backup:
 
 ```pg_restore --create --exit-on-error --verbose "path\to\file.backup"```
 
-## Queries:
+## Queries mais importantes:
 
-1) Selecionar todas as configurações (visc, dens, etc) após o programa EdgeCFD Pre referentes às malhas cavp.2, cavp.3 ou cavp.4 (mesh)
+#1 Selecionar todas as configurações (visc, dens, etc) após o programa EdgeCFD Pre referentes às malhas cavp.2, cavp.3 ou cavp.4 (mesh)
 
 ```SELECT DISTINCT "visc", "dens", "kxx", "kyy", "kzz", "mmodel", "mesh" ```
 ```FROM "scc2-edgecfd"."oedgecfdpre" , "scc2-edgecfd"."dl_mat"```
@@ -15,11 +20,11 @@
 ```mesh = 'cavp.4' AND```
 ```"oedgecfdpre"."dl_matid" = "dl_mat"."rid"```
 
-* **Tempo real: ** 0.007s
+* **Tempo real: ** 0.0072s
 
-[comment]: SELECT DISTINCT "visc", "dens", "kxx", "kyy", "kzz", "mmodel",  "mesh" FROM "scc2-edgecfd"."oedgecfdpre" , "scc2-edgecfd"."dl_mat" WHERE mesh = 'cavp.2' OR  mesh = 'cavp.3' OR  mesh = 'cavp.4' AND "oedgecfdpre"."dl_matid" = "dl_mat"."rid"
+*(média de 10 execuções)*
 
-4)  Selecionar todos os arquivos no formato dat (atributo dat) após a configuração das propriedades do solver (atividade SetSolverConfig) que utilizaram o algoritmo de solver (forcing) igual -4 ou -3
+#4  Selecionar todos os arquivos no formato dat (atributo dat) após a configuração das propriedades do solver (atividade SetSolverConfig) que utilizaram o algoritmo de solver (forcing) igual -4 ou -3
 
 ```SELECT DISTINCT dat ```
 ```FROM "scc2-edgecfd".osetsolverconfig, "scc2-edgecfd".dl_in, "scc2-edgecfd".oedgecfdpre```
@@ -27,12 +32,11 @@
 ```AND dl_in.rid = oedgecfdpre.dl_inid ```
 ```AND dl_in.forcing in (-3, -4) ```
 
-* **Tempo real: ** 0.002s
+* **Tempo real: ** 0.0024s
 
-[comment]: SELECT DISTINCT dat
-FROM "scc2-edgecfd".osetsolverconfig, "scc2-edgecfd".dl_in, "scc2-edgecfd".oedgecfdpre WHERE osetsolverconfig.previoustaskid = oedgecfdpre.nexttaskid  AND dl_in.rid = oedgecfdpre.dl_inid  AND dl_in.forcing in (-3, -4)
+*(média de 10 execuções)*
 
-7) Selecionar a malha (atributo mesh), as propriedades do fluido (visc e dens) e o algoritmo do solver (forcing), em que a velocidade no eixo x (velocity_0) seja maior que 0.21
+#7 Selecionar a malha (atributo mesh), as propriedades do fluido (visc e dens) e o algoritmo do solver (forcing), em que a velocidade no eixo x (velocity_0) seja maior que 0.21
 
 ```SELECT DISTINCT oedgecfdsolver.mesh, visc, dens, forcing```
 ```FROM "scc2-edgecfd".dl_in, "scc2-edgecfd".dl_mat, "scc2-edgecfd".dl_solver, "scc2-edgecfd".oedgecfdpre,"scc2-edgecfd".osetsolverconfig, "scc2-edgecfd".oedgecfdsolver```
@@ -45,9 +49,10 @@ FROM "scc2-edgecfd".osetsolverconfig, "scc2-edgecfd".dl_in, "scc2-edgecfd".oedge
 
 * **Tempo real: ** 0.163s
 
-[comment]: SELECT DISTINCT oedgecfdsolver.mesh, visc, dens, forcing FROM "scc2-edgecfd".dl_in, "scc2-edgecfd".dl_mat, "scc2-edgecfd".dl_solver, "scc2-edgecfd".oedgecfdpre,"scc2-edgecfd".osetsolverconfig, "scc2-edgecfd".oedgecfdsolver WHERE dl_solver.rid = oedgecfdsolver.dl_solverid AND oedgecfdsolver.taskid = osetsolverconfig.nexttaskid AND osetsolverconfig.previoustaskid = oedgecfdpre.nexttaskid AND oedgecfdpre.dl_matid = dl_mat.rid AND oedgecfdpre.dl_inid = dl_in.rid AND dl_solver.velocity_0 > 0.21
+*(média de 10 execuções)*
 
 ![queries](img/schema.png)
+*Ilustração das queries.*
 
 ## Propostas de Fragmentação
 
@@ -140,3 +145,21 @@ Agora, iremos rodar novamente as queries. Dessa vez, ao invés de consultarmos t
 *(médias de 10 execuções)*
 
 Dessa vez observamos ganhos menos expressivos, especialmente para a query 4 e 7.
+
+### Fragmentação Híbrida
+
+Observamos que tanto para o caso da fragmentação horizontal, quanto para o caso da fragmentação horizontal, o tempo de execução de todas as queries foi diminuído. Para um melhor aproveitamento desse fato, seria interessante buscarmos uma combinação de fragmentos que melhor otimize nosso tempo de consulta, o que significa misturar os dois tipos de fragmentação estudados.
+
+Nesse trabalho, foram estudadas as fragmentações horizontais e verticais propostas acima de forma independente entre si. Como proposta, seria interessante considerar a fragmentação vertical de todos os fragmentos horizontais em fragmentos de tuplas truncadas verticalmente, como foi experimentado na seção de fragmentação vertical.
+
+A fim de reduzir o número de fragmentos finais, poderia ser ainda mais interessante descartar fragmentações que resultaram em melhorias pouco expressivas, como foi o caso da fragmentação vertical da tabela dl_solver .
+
+### Replicação de Tabelas e Distribuição em Sítios.
+
+Por conta de dificuldades técnicas, não foi possível realizar a experimentação do uso de tabelas replicadas e nem de fragmentos distribuídos em múltiplos sítios.
+
+É de se esperar, contudo, que a replicação de tabelas resulte em tempos de resposta menores, em especial caso de clientes espalhados por uma rede física na qual diversos sítios do serviço estejam bem distribuídos fisicamente para atender demnandas provenientes de pontos diversos da malha da rede. Do ponto de vista de um experimentador local, como é o caso, a replicação pode ser vantajosa no momento em que há muita demanda pelo serviço de dados , promovendo alta paralelização.
+
+Com relação à distribuição de tabelas e fragmentos pela rede, ela tende a ser bastante vantajosa a partir do ponto que nos permite e viabiliza o paralelismo intra-query. Se as tabelas e os fragmentos forem devidamente distribuídos em função das queries de maior importancia, é possível otimizar no que diz respeito ao tempo de execução. Essa abordagem, contudo, deve ser estudada com cuidado, pois um dos maiores custos associados à distribuicão é justamente o custo de comunicação.
+
+De forma similar, a distribuição em sítios também nos permite fazer uso do paralelismo inter-query, a partir do momneto em que diversas queries passam a ser respondidas por apenas parte dos nós do cluster de dados.
